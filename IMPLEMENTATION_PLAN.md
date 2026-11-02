@@ -38,7 +38,7 @@ Additional rules:
 ## Progress
 
 - [x] F1 Project skeleton and local environment
-- [ ] F2 Database schema and persistence
+- [x] F2 Database schema and persistence
 - [ ] F3 Domain logic and status lifecycle
 - [ ] F4 REST API and error handling
 - [ ] F5 Authentication and CORS
