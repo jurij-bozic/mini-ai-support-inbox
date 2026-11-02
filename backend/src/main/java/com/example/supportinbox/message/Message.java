@@ -72,6 +72,50 @@ public class Message {
 		return message;
 	}
 
+	// Status transitions. All lifecycle rules live here.
+
+	public void markDraftReady(Category category, String draft) {
+		requireStatus("complete AI processing of", MessageStatus.PENDING_AI);
+		this.category = category;
+		this.aiDraft = draft;
+		this.finalReply = draft;
+		this.aiErrorCode = null;
+		this.status = MessageStatus.DRAFT_READY;
+	}
+
+	public void markAiFailed(String errorCode) {
+		requireStatus("fail AI processing of", MessageStatus.PENDING_AI);
+		this.aiErrorCode = errorCode;
+		this.status = MessageStatus.AI_FAILED;
+	}
+
+	public void beginRegeneration() {
+		requireStatus("regenerate", MessageStatus.AI_FAILED, MessageStatus.DRAFT_READY);
+		this.aiErrorCode = null;
+		this.status = MessageStatus.PENDING_AI;
+	}
+
+	public void editReply(String reply) {
+		requireStatus("edit the reply of", MessageStatus.DRAFT_READY);
+		this.finalReply = reply;
+	}
+
+	public void approve(String reply) {
+		requireStatus("approve", MessageStatus.DRAFT_READY);
+		this.finalReply = reply;
+		this.approvedAt = Instant.now();
+		this.status = MessageStatus.APPROVED;
+	}
+
+	private void requireStatus(String action, MessageStatus... allowed) {
+		for (MessageStatus candidate : allowed) {
+			if (status == candidate) {
+				return;
+			}
+		}
+		throw new InvalidStatusTransitionException(status, action);
+	}
+
 	@PrePersist
 	void onCreate() {
 		Instant now = Instant.now();
