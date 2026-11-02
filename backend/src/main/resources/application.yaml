@@ -1,0 +1,20 @@
+spring:
+  application:
+    name: support-inbox
+  threads:
+    virtual:
+      enabled: true
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/support_inbox}
+    username: ${DATABASE_USERNAME:support_inbox}
+    password: ${DATABASE_PASSWORD:support_inbox}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
