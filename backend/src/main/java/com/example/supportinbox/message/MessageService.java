@@ -7,6 +7,9 @@ import com.example.supportinbox.ai.AiErrorCode;
 import com.example.supportinbox.ai.AiException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 /**
@@ -40,6 +43,14 @@ public class MessageService {
 
 	public Message get(UUID id) {
 		return transactions.get(id);
+	}
+
+	/**
+	 * Newest first. Filters are optional.
+	 */
+	public Page<Message> list(MessageStatus status, Category category, int page, int size) {
+		PageRequest pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+		return transactions.list(status, category, pageable);
 	}
 
 	public Message editReply(UUID id, long version, String finalReply) {

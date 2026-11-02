@@ -40,7 +40,7 @@ Additional rules:
 - [x] F1 Project skeleton and local environment
 - [x] F2 Database schema and persistence
 - [x] F3 Domain logic and status lifecycle
-- [ ] F4 REST API and error handling
+- [x] F4 REST API and error handling
 - [ ] F5 Authentication and CORS
 - [ ] F6 OpenRouter AI integration
 - [ ] F7 Rate limiting

@@ -2,6 +2,9 @@ package com.example.supportinbox.message;
 
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +31,18 @@ class MessageTransactions {
 	@Transactional(readOnly = true)
 	Message get(UUID id) {
 		return find(id);
+	}
+
+	@Transactional(readOnly = true)
+	Page<Message> list(MessageStatus status, Category category, Pageable pageable) {
+		Specification<Message> filter = Specification.unrestricted();
+		if (status != null) {
+			filter = filter.and((root, query, cb) -> cb.equal(root.get("status"), status));
+		}
+		if (category != null) {
+			filter = filter.and((root, query, cb) -> cb.equal(root.get("category"), category));
+		}
+		return repository.findAll(filter, pageable);
 	}
 
 	@Transactional
