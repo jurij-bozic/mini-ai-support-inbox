@@ -40,3 +40,33 @@ export function listMessages(
   if (category) query.set('category', category)
   return apiFetch<PageResponse<MessageSummary>>(`/api/messages?${query}`, options)
 }
+
+export interface MessageDetail {
+  id: string
+  customerName: string | null
+  customerEmail: string | null
+  content: string
+  category: Category | null
+  status: MessageStatus
+  aiDraft: string | null
+  finalReply: string | null
+  aiErrorCode: string | null
+  createdAt: string
+  updatedAt: string
+  approvedAt: string | null
+  version: number
+}
+
+export interface CreateMessageInput {
+  content: string
+  customerName: string | null
+  customerEmail: string | null
+}
+
+/** Runs the whole AI pipeline server-side; resolves with 201 even when the AI step failed. */
+export function createMessage(
+  input: CreateMessageInput,
+  options: { signal?: AbortSignal; onSlow?: () => void } = {},
+): Promise<MessageDetail> {
+  return apiFetch<MessageDetail>('/api/messages', { method: 'POST', body: input, ...options })
+}

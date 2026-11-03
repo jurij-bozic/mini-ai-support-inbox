@@ -46,7 +46,7 @@ Additional rules:
 - [x] F7 Rate limiting
 - [x] F8 Frontend foundation and login
 - [x] F9 Message history view
-- [ ] F10 New message form
+- [x] F10 New message form
 - [ ] F11 Message detail: edit, approve, regenerate
 - [ ] F12 (Optional) Per-customer history
 - [ ] F13 Deployment and documentation
