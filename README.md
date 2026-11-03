@@ -65,6 +65,13 @@ them. Spring Boot does not read `.env` files itself; keep the real values in a g
 `backend/.env` and load them into your shell before starting, e.g.
 `set -a; source .env; set +a`. Tests never call OpenRouter: they use a stub or mock `AiAssistant`.
 
+## Rate limiting
+
+`POST /api/messages` and `POST /api/messages/{id}/regenerate` trigger paid LLM calls, so they share
+one global in-memory bucket (Bucket4j) of `RATE_LIMIT_AI_PER_MINUTE` requests per minute (default
+10). Beyond that the API returns 429 with a `Retry-After` header. The limit is per backend
+instance, not distributed. Other endpoints are not limited.
+
 ## Checks
 
 ```bash

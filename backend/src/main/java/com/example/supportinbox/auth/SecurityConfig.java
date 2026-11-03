@@ -1,6 +1,8 @@
 package com.example.supportinbox.auth;
 
+import com.example.supportinbox.common.RateLimitFilter;
 import com.example.supportinbox.config.AdminProperties;
+import com.example.supportinbox.config.RateLimitProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -13,14 +15,16 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import tools.jackson.databind.ObjectMapper;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.intercept.AuthorizationFilter;
 
 @Configuration
 public class SecurityConfig {
 
 	@Bean
-	SecurityFilterChain securityFilterChain(HttpSecurity http, ProblemDetailAuthEntryPoint entryPoint)
-			throws Exception {
+	SecurityFilterChain securityFilterChain(HttpSecurity http, ProblemDetailAuthEntryPoint entryPoint,
+			RateLimitProperties rateLimit, ObjectMapper objectMapper) throws Exception {
 		return http
 			// CSRF protection defends against browsers attaching ambient credentials (cookies) to
 			// forged requests. This API is stateless and uses no cookies: credentials travel only in
@@ -34,6 +38,7 @@ public class SecurityConfig {
 				.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 				.requestMatchers("/actuator/health", "/actuator/health/**").permitAll()
 				.anyRequest().authenticated())
+			.addFilterAfter(new RateLimitFilter(rateLimit, objectMapper), AuthorizationFilter.class)
 			.build();
 	}
 

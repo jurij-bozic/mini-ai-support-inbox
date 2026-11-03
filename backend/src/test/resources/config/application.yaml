@@ -5,6 +5,9 @@ app:
     password-hash: "{bcrypt}$2y$10$NwPrVA2.CI50ZXaV9Xan1.vhwXYbEUhPQdhT3uUv9NLcTGw0U2Oj6"
   cors:
     allowed-origins: http://allowed.example
+  rate-limit:
+    # High enough that tests sharing a context never hit the limit; RateLimitIntegrationTest lowers it.
+    ai-per-minute: 1000
   ai:
     # Dummy values: tests use a stub or mock AiAssistant and never reach the network.
     api-key: test-key

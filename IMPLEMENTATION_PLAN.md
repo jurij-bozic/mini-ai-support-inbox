@@ -43,7 +43,7 @@ Additional rules:
 - [x] F4 REST API and error handling
 - [x] F5 Authentication and CORS
 - [x] F6 OpenRouter AI integration
-- [ ] F7 Rate limiting
+- [x] F7 Rate limiting
 - [ ] F8 Frontend foundation and login
 - [ ] F9 Message history view
 - [ ] F10 New message form
