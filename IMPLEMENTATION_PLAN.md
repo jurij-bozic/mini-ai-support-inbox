@@ -41,7 +41,7 @@ Additional rules:
 - [x] F2 Database schema and persistence
 - [x] F3 Domain logic and status lifecycle
 - [x] F4 REST API and error handling
-- [ ] F5 Authentication and CORS
+- [x] F5 Authentication and CORS
 - [ ] F6 OpenRouter AI integration
 - [ ] F7 Rate limiting
 - [ ] F8 Frontend foundation and login

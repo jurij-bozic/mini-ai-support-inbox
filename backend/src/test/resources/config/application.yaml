@@ -1,0 +1,7 @@
+# Test-only admin account; the password is "test-password" (throwaway, not a real secret).
+app:
+  admin:
+    username: test-admin
+    password-hash: "{bcrypt}$2y$10$NwPrVA2.CI50ZXaV9Xan1.vhwXYbEUhPQdhT3uUv9NLcTGw0U2Oj6"
+  cors:
+    allowed-origins: http://allowed.example
