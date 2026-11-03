@@ -14,6 +14,8 @@ export interface RequestOptions {
   onSlow?: () => void
   /** Set to false so a 401 does not trigger the global unauthorized handler. */
   handleUnauthorized?: boolean
+  /** Lets the caller cancel the request (e.g. when a component unmounts). */
+  signal?: AbortSignal
 }
 
 export const REQUEST_TIMEOUT_MS = 60_000
@@ -69,6 +71,8 @@ export async function apiFetch<T>(path: string, options: RequestOptions = {}): P
   if (body !== undefined) headers['Content-Type'] = 'application/json'
 
   const controller = new AbortController()
+  if (options.signal?.aborted) controller.abort()
+  options.signal?.addEventListener('abort', () => controller.abort(), { once: true })
   let timedOut = false
   const timeout = setTimeout(() => {
     timedOut = true
