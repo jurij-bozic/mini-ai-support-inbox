@@ -45,7 +45,7 @@ describe('apiFetch', () => {
 
   it('parses ProblemDetail errors including field errors', async () => {
     fetchMock.mockResolvedValue(
-      json({ title: 'Validation failed', detail: 'Bad input', errors: { content: 'must not be blank' } }, 400),
+      json({ title: 'Validation failed', detail: 'Bad input', errors: [{ field: 'content', message: 'must not be blank' }] }, 400),
     )
     const error = (await apiFetch('/api/x').catch((e) => e)) as ApiError
     expect(error).toBeInstanceOf(ApiError)
@@ -53,6 +53,33 @@ describe('apiFetch', () => {
     expect(error.title).toBe('Validation failed')
     expect(error.message).toBe('Bad input')
     expect(error.fieldErrors).toEqual({ content: 'must not be blank' })
+  })
+
+  it('keeps the first message per field and ignores malformed field error entries', async () => {
+    fetchMock.mockResolvedValue(
+      json(
+        {
+          title: 'Validation failed',
+          errors: [
+            { field: 'content', message: 'first' },
+            { field: 'content', message: 'second' },
+            { field: 'customerEmail', message: 'bad email' },
+            { field: 42, message: 'wrong type' },
+            'not an object',
+            null,
+          ],
+        },
+        400,
+      ),
+    )
+    const error = (await apiFetch('/api/x').catch((e) => e)) as ApiError
+    expect(error.fieldErrors).toEqual({ content: 'first', customerEmail: 'bad email' })
+  })
+
+  it('returns no field errors when errors is not an array', async () => {
+    fetchMock.mockResolvedValue(json({ title: 'Validation failed', errors: { content: 'object form' } }, 400))
+    const error = (await apiFetch('/api/x').catch((e) => e)) as ApiError
+    expect(error.fieldErrors).toEqual({})
   })
 
   it('falls back to a generic error for non-JSON error bodies', async () => {

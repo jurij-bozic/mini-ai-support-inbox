@@ -53,11 +53,17 @@ async function toApiError(response: Response): Promise<ApiError> {
   return new ApiError(response.status, title, detail, parseFieldErrors(problem.errors))
 }
 
+/**
+ * The backend sends validation errors as `[{ "field": "content", "message": "..." }]`.
+ * If a field has several violations, the first one wins.
+ */
 function parseFieldErrors(errors: unknown): FieldErrors {
-  if (typeof errors !== 'object' || errors === null) return {}
+  if (!Array.isArray(errors)) return {}
   const result: FieldErrors = {}
-  for (const [field, message] of Object.entries(errors)) {
-    if (typeof message === 'string') result[field] = message
+  for (const entry of errors) {
+    if (typeof entry !== 'object' || entry === null) continue
+    const { field, message } = entry as { field?: unknown; message?: unknown }
+    if (typeof field === 'string' && typeof message === 'string' && !(field in result)) result[field] = message
   }
   return result
 }

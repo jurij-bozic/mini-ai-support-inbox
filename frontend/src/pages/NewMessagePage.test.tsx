@@ -94,7 +94,7 @@ it('still navigates to the detail view when the AI step failed', async () => {
 
 it('shows server field errors next to the field', async () => {
   fetchMock.mockResolvedValue(
-    problem(400, { title: 'Validation failed', errors: { customerEmail: 'must be a well-formed email address' } }),
+    problem(400, { title: 'Validation failed', errors: [{ field: 'customerEmail', message: 'must be a well-formed email address' }] }),
   )
   const user = renderForm()
   await user.type(screen.getByLabelText('Message'), 'Hello')
