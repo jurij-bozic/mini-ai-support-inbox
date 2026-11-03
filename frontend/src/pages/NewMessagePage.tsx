@@ -21,7 +21,7 @@ function validate(content: string, name: string, email: string): FieldErrors {
 
 function FieldError({ id, message }: { id: string; message?: string }) {
   return message ? (
-    <span id={id} role="alert">
+    <span id={id} role="alert" className="field-error">
       {message}
     </span>
   ) : null
@@ -79,7 +79,7 @@ export function NewMessagePage() {
   return (
     <>
       <h2>New message</h2>
-      <form onSubmit={handleSubmit} noValidate>
+      <form className="card" onSubmit={handleSubmit} noValidate>
         <fieldset disabled={pending}>
           <label>
             Message
@@ -91,32 +91,40 @@ export function NewMessagePage() {
               aria-describedby="content-error"
             />
           </label>
-          <span aria-live="polite">
+          <span aria-live="polite" className={content.length > MAX_CONTENT ? 'counter over' : 'counter'}>
             {content.length} / {MAX_CONTENT}
           </span>
           <FieldError id="content-error" message={fieldErrors.content} />
-          <label>
-            Customer name (optional)
-            <input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              aria-invalid={Boolean(fieldErrors.customerName)}
-              aria-describedby="name-error"
-            />
-          </label>
-          <FieldError id="name-error" message={fieldErrors.customerName} />
-          <label>
-            Customer email (optional)
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              aria-invalid={Boolean(fieldErrors.customerEmail)}
-              aria-describedby="email-error"
-            />
-          </label>
-          <FieldError id="email-error" message={fieldErrors.customerEmail} />
-          <button type="submit">{pending ? 'Classifying and drafting…' : 'Submit'}</button>
+          <div className="form-row">
+            <div>
+              <label>
+                Customer name (optional)
+                <input
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  aria-invalid={Boolean(fieldErrors.customerName)}
+                  aria-describedby="name-error"
+                />
+              </label>
+              <FieldError id="name-error" message={fieldErrors.customerName} />
+            </div>
+            <div>
+              <label>
+                Customer email (optional)
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  aria-invalid={Boolean(fieldErrors.customerEmail)}
+                  aria-describedby="email-error"
+                />
+              </label>
+              <FieldError id="email-error" message={fieldErrors.customerEmail} />
+            </div>
+          </div>
+          <button type="submit" className="primary">
+            {pending ? 'Classifying and drafting…' : 'Submit'}
+          </button>
         </fieldset>
         {pending && <p role="status">The AI is classifying the message and writing a draft, this can take a few seconds…</p>}
         {slow && <p role="status">The server is waking up, this can take up to a minute…</p>}

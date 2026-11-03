@@ -77,9 +77,9 @@ export function MessageListPage() {
     <section>
       <h2>Messages</h2>
 
-      <div className="filters">
+      <div className="filters card">
         <label>
-          Status{' '}
+          Status
           <select value={status ?? ''} onChange={(e) => updateParams({ status: e.target.value, page: 0 })}>
             <option value="">All</option>
             {MESSAGE_STATUSES.map((value) => (
@@ -88,9 +88,9 @@ export function MessageListPage() {
               </option>
             ))}
           </select>
-        </label>{' '}
+        </label>
         <label>
-          Category{' '}
+          Category
           <select value={category ?? ''} onChange={(e) => updateParams({ category: e.target.value, page: 0 })}>
             <option value="">All</option>
             {CATEGORIES.map((value) => (
@@ -103,8 +103,8 @@ export function MessageListPage() {
       </div>
 
       {customerEmail && (
-        <p>
-          Showing messages from {customerEmail}.{' '}
+        <p className="filter-note">
+          Showing messages from {customerEmail}.
           <button onClick={() => updateParams({ customerEmail: '', page: 0 })}>Clear</button>
         </p>
       )}
@@ -121,52 +121,54 @@ export function MessageListPage() {
       )}
 
       {!loading && !error && data && data.items.length === 0 && (
-        <p>{filtersActive ? 'No messages match the selected filters.' : 'No messages yet.'}</p>
+        <p className="empty">{filtersActive ? 'No messages match the selected filters.' : 'No messages yet.'}</p>
       )}
 
       {!loading && !error && data && data.items.length > 0 && (
-        <>
-          <table>
-            <thead>
-              <tr>
-                <th>Created</th>
-                <th>Customer</th>
-                <th>Message</th>
-                <th>Category</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.items.map((message) => (
-                <tr key={message.id}>
-                  <td>{new Date(message.createdAt).toLocaleString()}</td>
-                  <td>{customerLabel(message)}</td>
-                  <td>
-                    <Link to={`/messages/${message.id}`}>{message.contentPreview}</Link>
-                  </td>
-                  <td>
-                    <CategoryBadge category={message.category} />
-                  </td>
-                  <td>
-                    <StatusBadge status={message.status} />
-                  </td>
+        <div className="card">
+          <div className="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Created</th>
+                  <th>Customer</th>
+                  <th>Message</th>
+                  <th>Category</th>
+                  <th>Status</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {data.items.map((message) => (
+                  <tr key={message.id}>
+                    <td>{new Date(message.createdAt).toLocaleString()}</td>
+                    <td>{customerLabel(message)}</td>
+                    <td>
+                      <Link to={`/messages/${message.id}`}>{message.contentPreview}</Link>
+                    </td>
+                    <td>
+                      <CategoryBadge category={message.category} />
+                    </td>
+                    <td>
+                      <StatusBadge status={message.status} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
-          <nav aria-label="Pagination">
+          <nav className="pagination" aria-label="Pagination">
             <button disabled={data.page <= 0} onClick={() => updateParams({ page: data.page - 1 })}>
               Previous
-            </button>{' '}
+            </button>
             <span>
               Page {data.page + 1} of {totalPages} ({data.totalElements} messages)
-            </span>{' '}
+            </span>
             <button disabled={data.page + 1 >= totalPages} onClick={() => updateParams({ page: data.page + 1 })}>
               Next
             </button>
           </nav>
-        </>
+        </div>
       )}
     </section>
   )

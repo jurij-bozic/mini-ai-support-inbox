@@ -119,112 +119,121 @@ export function MessageDetailPage() {
       <p>
         <Link to="/">← Back to messages</Link>
       </p>
-      <h2>Message</h2>
-      <p>
-        <StatusBadge status={message.status} /> <CategoryBadge category={message.category} />
-      </p>
-      <dl>
-        <dt>Customer</dt>
-        <dd>
-          {message.customerName || 'Anonymous'}
-          {message.customerEmail ? ` (${message.customerEmail})` : ''}
-          {message.customerEmail && (
+      <div className="card">
+        <div className="page-header">
+          <h2>Message</h2>
+          <div className="badges">
+            <StatusBadge status={message.status} />
+            <CategoryBadge category={message.category} />
+          </div>
+        </div>
+        <dl className="meta">
+          <dt>Customer</dt>
+          <dd>
+            {message.customerName || 'Anonymous'}
+            {message.customerEmail ? ` (${message.customerEmail})` : ''}
+            {message.customerEmail && (
+              <>
+                {' '}
+                <Link to={`/?${new URLSearchParams({ customerEmail: message.customerEmail })}`}>
+                  Other messages from this customer
+                </Link>
+              </>
+            )}
+          </dd>
+          <dt>Created</dt>
+          <dd>{formatDate(message.createdAt)}</dd>
+          <dt>Updated</dt>
+          <dd>{formatDate(message.updatedAt)}</dd>
+          {message.approvedAt && (
             <>
-              {' '}
-              <Link to={`/?${new URLSearchParams({ customerEmail: message.customerEmail })}`}>
-                Other messages from this customer
-              </Link>
+              <dt>Approved</dt>
+              <dd>{formatDate(message.approvedAt)}</dd>
             </>
           )}
-        </dd>
-        <dt>Created</dt>
-        <dd>{formatDate(message.createdAt)}</dd>
-        <dt>Updated</dt>
-        <dd>{formatDate(message.updatedAt)}</dd>
-        {message.approvedAt && (
+        </dl>
+
+        <h3>Customer message</h3>
+        <p className="preformatted quote">{message.content}</p>
+      </div>
+
+      <div className="card">
+
+        {message.status === 'PENDING_AI' && <p role="status">The AI is still processing this message.</p>}
+
+        {message.status === 'AI_FAILED' && (
+          <p role="alert">
+            {aiErrorMessage(message.aiErrorCode)} You can try to regenerate the draft.
+          </p>
+        )}
+
+        {message.aiDraft !== null && (
           <>
-            <dt>Approved</dt>
-            <dd>{formatDate(message.approvedAt)}</dd>
+            <h3>AI draft</h3>
+            <p className="preformatted quote" data-testid="ai-draft">
+              {message.aiDraft}
+            </p>
           </>
         )}
-      </dl>
 
-      <h3>Customer message</h3>
-      <p className="preformatted">{message.content}</p>
+        {message.status === 'APPROVED' && (
+          <>
+            <h3>Approved reply</h3>
+            <p className="preformatted quote approved" data-testid="approved-reply">
+              {message.finalReply}
+            </p>
+          </>
+        )}
 
-      {message.status === 'PENDING_AI' && <p role="status">The AI is still processing this message.</p>}
+        {isDraft && (
+          <>
+            <h3>Final reply</h3>
+            <label>
+              Final reply
+              <textarea value={reply} onChange={(e) => setReply(e.target.value)} rows={10} disabled={disabled} />
+            </label>
+            <span aria-live="polite" className={reply.length > MAX_REPLY ? 'counter over' : 'counter'}>
+              {reply.length} / {MAX_REPLY}
+            </span>
+          </>
+        )}
 
-      {message.status === 'AI_FAILED' && (
-        <p role="alert">
-          {aiErrorMessage(message.aiErrorCode)} You can try to regenerate the draft.
-        </p>
-      )}
-
-      {message.aiDraft !== null && (
-        <>
-          <h3>AI draft</h3>
-          <p className="preformatted" data-testid="ai-draft">
-            {message.aiDraft}
+        {conflict && (
+          <p role="alert" className="warn">
+            This message was changed elsewhere. <button onClick={() => setReloadCount((n) => n + 1)}>Reload</button>
           </p>
-        </>
-      )}
+        )}
+        {actionError && <p role="alert">{actionError}</p>}
+        {busy === 'regenerate' && <p role="status">The AI is writing a new draft, this can take a few seconds…</p>}
+        {slow && <p role="status">The server is waking up, this can take up to a minute…</p>}
 
-      {message.status === 'APPROVED' && (
-        <>
-          <h3>Approved reply</h3>
-          <p className="preformatted" data-testid="approved-reply">
-            {message.finalReply}
-          </p>
-        </>
-      )}
-
-      {isDraft && (
-        <>
-          <h3>Final reply</h3>
-          <label>
-            Final reply
-            <textarea value={reply} onChange={(e) => setReply(e.target.value)} rows={10} disabled={disabled} />
-          </label>
-          <span aria-live="polite">
-            {reply.length} / {MAX_REPLY}
-          </span>
-        </>
-      )}
-
-      {conflict && (
-        <p role="alert">
-          This message was changed elsewhere. <button onClick={() => setReloadCount((n) => n + 1)}>Reload</button>
-        </p>
-      )}
-      {actionError && <p role="alert">{actionError}</p>}
-      {busy === 'regenerate' && <p role="status">The AI is writing a new draft, this can take a few seconds…</p>}
-      {slow && <p role="status">The server is waking up, this can take up to a minute…</p>}
-
-      {message.status !== 'APPROVED' && message.status !== 'PENDING_AI' && (
-        <div>
-          {isDraft && (
-            <>
-              <button
-                onClick={() => void run('save', (signal, onSlow) => saveReply(id, input, { signal, onSlow }))}
-                disabled={disabled || replyInvalid}
-              >
-                {busy === 'save' ? 'Saving…' : 'Save'}
-              </button>{' '}
-              <button
-                onClick={() => void run('approve', (signal, onSlow) => approveMessage(id, input, { signal, onSlow }))}
-                disabled={disabled || replyInvalid}
-              >
-                {busy === 'approve' ? 'Approving…' : 'Approve'}
-              </button>{' '}
-            </>
-          )}
-          {canRegenerate && (
-            <button onClick={handleRegenerate} disabled={disabled}>
-              {busy === 'regenerate' ? 'Regenerating…' : 'Regenerate'}
-            </button>
-          )}
-        </div>
-      )}
+        {message.status !== 'APPROVED' && message.status !== 'PENDING_AI' && (
+          <div className="actions">
+            {isDraft && (
+              <>
+                <button
+                  onClick={() => void run('save', (signal, onSlow) => saveReply(id, input, { signal, onSlow }))}
+                  disabled={disabled || replyInvalid}
+                >
+                  {busy === 'save' ? 'Saving…' : 'Save'}
+                </button>
+                <button
+                  className="primary"
+                  onClick={() => void run('approve', (signal, onSlow) => approveMessage(id, input, { signal, onSlow }))}
+                  disabled={disabled || replyInvalid}
+                >
+                  {busy === 'approve' ? 'Approving…' : 'Approve'}
+                </button>
+              </>
+            )}
+            {canRegenerate && (
+              <button className={isDraft ? 'spacer' : undefined} onClick={handleRegenerate} disabled={disabled}>
+                {busy === 'regenerate' ? 'Regenerating…' : 'Regenerate'}
+              </button>
+            )}
+          </div>
+        )}
+      </div>
     </>
   )
 }

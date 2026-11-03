@@ -8,9 +8,12 @@ export function Layout() {
       <header>
         <strong>Mini AI Support Inbox</strong>
         <nav>
-          <Link to="/">Messages</Link> <Link to="/new">New message</Link>
+          <Link to="/">Messages</Link>
+          <Link to="/new">New message</Link>
         </nav>
-        <span>{username}</span> <button onClick={logout}>Log out</button>
+        <span>{username}</span> <button className="quiet" onClick={logout}>
+          Log out
+        </button>
       </header>
       <main>
         <Outlet />

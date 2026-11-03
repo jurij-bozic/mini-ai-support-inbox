@@ -36,9 +36,9 @@ export function LoginPage() {
   }
 
   return (
-    <main>
+    <main className="auth">
       <h1>Mini AI Support Inbox</h1>
-      <form onSubmit={handleSubmit}>
+      <form className="card" onSubmit={handleSubmit}>
         <label>
           Username
           <input value={username} onChange={(e) => setUsername(e.target.value)} autoComplete="username" required />
@@ -53,7 +53,7 @@ export function LoginPage() {
             required
           />
         </label>
-        <button type="submit" disabled={pending}>
+        <button type="submit" className="primary" disabled={pending}>
           {pending ? 'Signing in…' : 'Sign in'}
         </button>
         {slow && <p role="status">The server is waking up, this can take up to a minute…</p>}
