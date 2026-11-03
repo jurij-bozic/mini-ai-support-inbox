@@ -44,7 +44,7 @@ Additional rules:
 - [x] F5 Authentication and CORS
 - [x] F6 OpenRouter AI integration
 - [x] F7 Rate limiting
-- [ ] F8 Frontend foundation and login
+- [x] F8 Frontend foundation and login
 - [ ] F9 Message history view
 - [ ] F10 New message form
 - [ ] F11 Message detail: edit, approve, regenerate
