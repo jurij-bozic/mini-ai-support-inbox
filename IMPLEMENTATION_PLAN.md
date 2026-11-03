@@ -49,7 +49,7 @@ Additional rules:
 - [x] F10 New message form
 - [x] F11 Message detail: edit, approve, regenerate
 - [x] F12 (Optional) Per-customer history
-- [ ] F13 Deployment and documentation
+- [x] F13 Deployment and documentation
 
 ---
 

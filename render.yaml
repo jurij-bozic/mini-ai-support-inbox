@@ -1,0 +1,48 @@
+# Render Blueprint: backend web service + Postgres 17.
+# The frontend is deployed separately on Vercel (see README).
+services:
+  - type: web
+    name: support-inbox-backend
+    runtime: docker
+    region: frankfurt
+    plan: free
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /actuator/health
+    envVars:
+      # Render injects PORT; application.yaml reads it via server.port.
+      - key: DATABASE_USERNAME
+        fromDatabase:
+          name: support-inbox-db
+          property: user
+      - key: DATABASE_PASSWORD
+        fromDatabase:
+          name: support-inbox-db
+          property: password
+      # Must be the JDBC form: jdbc:postgresql://<internal-host>:5432/support_inbox.
+      # Render only exposes a postgres:// URL, so enter this one in the dashboard.
+      - key: DATABASE_URL
+        sync: false
+      - key: ADMIN_USERNAME
+        sync: false
+      - key: ADMIN_PASSWORD_HASH
+        sync: false
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: AI_MODEL_CLASSIFY
+        sync: false
+      - key: AI_MODEL_REPLY
+        sync: false
+      # Exact Vercel origin, e.g. https://your-app.vercel.app (no trailing slash).
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false
+      - key: RATE_LIMIT_AI_PER_MINUTE
+        value: "10"
+
+databases:
+  - name: support-inbox-db
+    region: frankfurt
+    plan: free
+    postgresMajorVersion: "17"
+    databaseName: support_inbox
+    user: support_inbox
