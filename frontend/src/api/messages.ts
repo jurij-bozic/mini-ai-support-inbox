@@ -70,3 +70,39 @@ export function createMessage(
 ): Promise<MessageDetail> {
   return apiFetch<MessageDetail>('/api/messages', { method: 'POST', body: input, ...options })
 }
+
+type RequestExtras = { signal?: AbortSignal; onSlow?: () => void }
+
+export interface ReplyInput {
+  finalReply: string
+  /** Version from the last server response; a stale value yields 409. */
+  version: number
+}
+
+export function getMessage(id: string, options: RequestExtras = {}): Promise<MessageDetail> {
+  return apiFetch<MessageDetail>(`/api/messages/${encodeURIComponent(id)}`, options)
+}
+
+export function saveReply(id: string, input: ReplyInput, options: RequestExtras = {}): Promise<MessageDetail> {
+  return apiFetch<MessageDetail>(`/api/messages/${encodeURIComponent(id)}/reply`, {
+    method: 'PUT',
+    body: input,
+    ...options,
+  })
+}
+
+export function approveMessage(id: string, input: ReplyInput, options: RequestExtras = {}): Promise<MessageDetail> {
+  return apiFetch<MessageDetail>(`/api/messages/${encodeURIComponent(id)}/approve`, {
+    method: 'POST',
+    body: input,
+    ...options,
+  })
+}
+
+/** Re-runs the AI pipeline; allowed from AI_FAILED and DRAFT_READY. */
+export function regenerateMessage(id: string, options: RequestExtras = {}): Promise<MessageDetail> {
+  return apiFetch<MessageDetail>(`/api/messages/${encodeURIComponent(id)}/regenerate`, {
+    method: 'POST',
+    ...options,
+  })
+}

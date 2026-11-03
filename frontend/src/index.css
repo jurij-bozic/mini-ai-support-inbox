@@ -30,3 +30,8 @@ td {
   text-align: left;
   border-bottom: 1px solid #e5e7eb;
 }
+
+.preformatted {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
