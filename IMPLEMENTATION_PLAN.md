@@ -42,7 +42,7 @@ Additional rules:
 - [x] F3 Domain logic and status lifecycle
 - [x] F4 REST API and error handling
 - [x] F5 Authentication and CORS
-- [ ] F6 OpenRouter AI integration
+- [x] F6 OpenRouter AI integration
 - [ ] F7 Rate limiting
 - [ ] F8 Frontend foundation and login
 - [ ] F9 Message history view

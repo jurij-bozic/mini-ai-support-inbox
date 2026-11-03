@@ -5,3 +5,8 @@ app:
     password-hash: "{bcrypt}$2y$10$NwPrVA2.CI50ZXaV9Xan1.vhwXYbEUhPQdhT3uUv9NLcTGw0U2Oj6"
   cors:
     allowed-origins: http://allowed.example
+  ai:
+    # Dummy values: tests use a stub or mock AiAssistant and never reach the network.
+    api-key: test-key
+    classify-model: test/classify-model
+    reply-model: test/reply-model

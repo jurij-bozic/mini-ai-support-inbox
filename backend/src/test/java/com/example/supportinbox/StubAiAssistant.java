@@ -1,14 +1,14 @@
-package com.example.supportinbox.ai;
+package com.example.supportinbox;
 
 import java.util.Locale;
 
+import com.example.supportinbox.ai.AiAssistant;
+import com.example.supportinbox.ai.ClassificationResult;
 import com.example.supportinbox.message.Category;
-import org.springframework.stereotype.Component;
 
 /**
- * Deterministic placeholder used until the OpenRouter client is built (F6).
+ * Deterministic stand-in for the OpenRouter client; tests must never call the real LLM API.
  */
-@Component
 public class StubAiAssistant implements AiAssistant {
 
 	@Override

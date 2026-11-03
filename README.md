@@ -28,6 +28,10 @@ docker compose up -d postgres
 #    Needs the admin account (see "Admin account" below)
 export ADMIN_USERNAME=admin
 export ADMIN_PASSWORD_HASH='{bcrypt}...'
+#    Needs the OpenRouter key and model IDs (see "AI provider" below)
+export OPENROUTER_API_KEY=...
+export AI_MODEL_CLASSIFY=...
+export AI_MODEL_REPLY=...
 ./mvnw spring-boot:run
 curl http://localhost:8080/actuator/health   # {"status":"UP",...}
 
@@ -51,6 +55,15 @@ echo "{bcrypt}$(htpasswd -nbBC 10 x 'your-password' | cut -d: -f2)"
 
 `CORS_ALLOWED_ORIGINS` (comma-separated, default `http://localhost:5173`) lists the frontend
 origins the browser may call the API from.
+
+## AI provider
+
+Classification and reply drafting call OpenRouter (`AI_BASE_URL`, default
+`https://openrouter.ai/api/v1`). `OPENROUTER_API_KEY`, `AI_MODEL_CLASSIFY` (cheap/fast model) and
+`AI_MODEL_REPLY` (higher quality model) have no defaults and the backend refuses to start without
+them. Spring Boot does not read `.env` files itself; keep the real values in a gitignored
+`backend/.env` and load them into your shell before starting, e.g.
+`set -a; source .env; set +a`. Tests never call OpenRouter: they use a stub or mock `AiAssistant`.
 
 ## Checks
 

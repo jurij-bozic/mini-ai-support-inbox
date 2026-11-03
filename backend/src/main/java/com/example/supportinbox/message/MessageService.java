@@ -5,6 +5,7 @@ import java.util.UUID;
 import com.example.supportinbox.ai.AiAssistant;
 import com.example.supportinbox.ai.AiErrorCode;
 import com.example.supportinbox.ai.AiException;
+import com.example.supportinbox.ai.ClassificationResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -81,7 +82,11 @@ public class MessageService {
 		Category category;
 		String draft;
 		try {
-			category = aiAssistant.classify(pending.getContent()).category();
+			ClassificationResult classification = aiAssistant.classify(pending.getContent());
+			if (classification.fellBack()) {
+				log.warn("Message {} classification output unusable, falling back to OTHER", id);
+			}
+			category = classification.category();
 			draft = aiAssistant.draftReply(pending.getContent(), pending.getCustomerName(), category);
 			if (draft == null || draft.isBlank()) {
 				throw new AiException(AiErrorCode.INVALID_RESPONSE, "Empty draft");
