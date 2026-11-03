@@ -101,7 +101,8 @@ export function MessageDetailPage() {
   if (!message) return <p role="status">Loading…</p>
 
   const isDraft = message.status === 'DRAFT_READY'
-  const canRegenerate = isDraft || message.status === 'AI_FAILED'
+  const canRegenerate = message.canRegenerate
+  const stuck = message.status === 'PENDING_AI' && canRegenerate
   const replyInvalid = reply.trim() === '' || reply.length > MAX_REPLY
   const dirty = reply !== initialReply(message)
   const disabled = busy !== null || conflict
@@ -159,7 +160,13 @@ export function MessageDetailPage() {
 
       <div className="card">
 
-        {message.status === 'PENDING_AI' && <p role="status">The AI is still processing this message.</p>}
+        {message.status === 'PENDING_AI' && !stuck && <p role="status">The AI is still processing this message.</p>}
+
+        {stuck && (
+          <p role="alert" className="warn">
+            This message seems to be stuck in processing. You can regenerate the draft.
+          </p>
+        )}
 
         {message.status === 'AI_FAILED' && (
           <p role="alert">
@@ -207,7 +214,7 @@ export function MessageDetailPage() {
         {busy === 'regenerate' && <p role="status">The AI is writing a new draft, this can take a few seconds…</p>}
         {slow && <p role="status">The server is waking up, this can take up to a minute…</p>}
 
-        {message.status !== 'APPROVED' && message.status !== 'PENDING_AI' && (
+        {canRegenerate && (
           <div className="actions">
             {isDraft && (
               <>
@@ -226,11 +233,9 @@ export function MessageDetailPage() {
                 </button>
               </>
             )}
-            {canRegenerate && (
-              <button className={isDraft ? 'spacer' : undefined} onClick={handleRegenerate} disabled={disabled}>
-                {busy === 'regenerate' ? 'Regenerating…' : 'Regenerate'}
-              </button>
-            )}
+            <button className={isDraft ? 'spacer' : undefined} onClick={handleRegenerate} disabled={disabled}>
+              {busy === 'regenerate' ? 'Regenerating…' : 'Regenerate'}
+            </button>
           </div>
         )}
       </div>

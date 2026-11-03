@@ -1,5 +1,6 @@
 package com.example.supportinbox.message;
 
+import java.time.Instant;
 import java.util.Locale;
 import java.util.UUID;
 
@@ -66,7 +67,7 @@ class MessageTransactions {
 	@Transactional
 	Message beginRegeneration(UUID id) {
 		Message message = find(id);
-		message.beginRegeneration();
+		message.beginRegeneration(Instant.now());
 		return message;
 	}
 

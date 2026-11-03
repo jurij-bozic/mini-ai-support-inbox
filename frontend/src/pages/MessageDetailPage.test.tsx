@@ -23,6 +23,7 @@ function message(overrides: Partial<MessageDetail> = {}): MessageDetail {
     updatedAt: '2026-11-03T09:00:00Z',
     approvedAt: null,
     version: 0,
+    canRegenerate: ['DRAFT_READY', 'AI_FAILED'].includes(overrides.status ?? 'DRAFT_READY'),
     ...overrides,
   }
 }
@@ -78,6 +79,20 @@ it('is read-only when APPROVED', async () => {
   expect(await screen.findByTestId('approved-reply')).toHaveTextContent('Final text')
   expect(screen.queryByRole('button')).not.toBeInTheDocument()
   expect(screen.queryByRole('textbox')).not.toBeInTheDocument()
+})
+
+it('offers regenerate for a message stuck in processing', async () => {
+  const user = renderDetail(message({ status: 'PENDING_AI', aiDraft: null, category: null, canRegenerate: true }))
+  expect(await screen.findByText(/seems to be stuck/)).toBeInTheDocument()
+  expect(screen.queryByText(/still processing/)).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Save' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Approve' })).not.toBeInTheDocument()
+
+  fetchMock.mockResolvedValueOnce(json(message({ version: 1 })))
+  await user.click(screen.getByRole('button', { name: 'Regenerate' }))
+
+  expect(await screen.findByTestId('ai-draft')).toHaveTextContent('Hello Ana, we will check.')
+  expect(lastRequest()).toMatchObject({ url: expect.stringContaining('/api/messages/m1/regenerate'), method: 'POST' })
 })
 
 it('shows no actions while the AI is still processing', async () => {

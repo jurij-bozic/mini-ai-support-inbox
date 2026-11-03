@@ -20,13 +20,15 @@ public record MessageResponse(
 		Instant createdAt,
 		Instant updatedAt,
 		Instant approvedAt,
-		Long version) {
+		Long version,
+		boolean canRegenerate) {
 
 	public static MessageResponse from(Message message) {
 		return new MessageResponse(message.getId(), message.getCustomerName(), message.getCustomerEmail(),
 				message.getContent(), message.getCategory(), message.getStatus(), message.getAiDraft(),
 				message.getFinalReply(), message.getAiErrorCode(), message.getCreatedAt(), message.getUpdatedAt(),
-				message.getApprovedAt(), message.getVersion());
+				message.getApprovedAt(), message.getVersion(),
+				message.canRegenerate(Instant.now()));
 	}
 
 }

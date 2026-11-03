@@ -24,6 +24,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -46,6 +47,9 @@ class MessageApiIntegrationTest {
 
 	@Autowired
 	private ObjectMapper objectMapper;
+
+	@Autowired
+	private JdbcTemplate jdbc;
 
 	@MockitoBean
 	private AiAssistant ai;
@@ -133,6 +137,43 @@ class MessageApiIntegrationTest {
 		mvc.perform(get("/api/messages/{id}", "00000000-0000-0000-0000-000000000000"))
 			.andExpect(status().isNotFound())
 			.andExpect(jsonPath("$.status").value(404));
+	}
+
+	@Test
+	void freshPendingMessageCannotBeRegenerated() throws Exception {
+		String id = create("Help").get("id").asText();
+		// Native update: bypasses @PreUpdate, so updated_at stays as set here.
+		jdbc.update("UPDATE messages SET status = 'PENDING_AI', updated_at = now() WHERE id = ?::uuid", id);
+
+		mvc.perform(get("/api/messages/{id}", id))
+			.andExpect(jsonPath("$.status").value("PENDING_AI"))
+			.andExpect(jsonPath("$.canRegenerate").value(false));
+		mvc.perform(post("/api/messages/{id}/regenerate", id)).andExpect(status().isConflict());
+	}
+
+	@Test
+	void stuckPendingMessageCanBeRegenerated() throws Exception {
+		String id = create("Help").get("id").asText();
+		jdbc.update("UPDATE messages SET status = 'PENDING_AI', updated_at = now() - interval '3 minutes' WHERE id = ?::uuid",
+				id);
+
+		mvc.perform(get("/api/messages/{id}", id))
+			.andExpect(jsonPath("$.status").value("PENDING_AI"))
+			.andExpect(jsonPath("$.canRegenerate").value(true));
+		mvc.perform(post("/api/messages/{id}/regenerate", id))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.status").value("DRAFT_READY"))
+			.andExpect(jsonPath("$.canRegenerate").value(true));
+	}
+
+	@Test
+	void canRegenerateIsFalseOnceApproved() throws Exception {
+		JsonNode created = create("Question?");
+		String id = created.get("id").asText();
+		mvc.perform(post("/api/messages/{id}/approve", id).contentType(MediaType.APPLICATION_JSON)
+			.content(reply("Done", created.get("version").asLong())))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.canRegenerate").value(false));
 	}
 
 	@Test

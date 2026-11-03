@@ -1,5 +1,6 @@
 package com.example.supportinbox.message;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -18,6 +19,12 @@ import jakarta.persistence.Version;
 @Entity
 @Table(name = "messages")
 public class Message {
+
+	/**
+	 * Longer than the worst-case AI run: two calls, each with 5 s connect, 15 s read and one
+	 * retry, is roughly 85 s.
+	 */
+	public static final Duration PENDING_STALE_AFTER = Duration.ofMinutes(2);
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)
@@ -89,10 +96,29 @@ public class Message {
 		this.status = MessageStatus.AI_FAILED;
 	}
 
-	public void beginRegeneration() {
-		requireStatus("regenerate", MessageStatus.AI_FAILED, MessageStatus.DRAFT_READY);
+	/**
+	 * Regenerate is allowed from AI_FAILED, DRAFT_READY, and from a PENDING_AI message that is
+	 * stuck (see {@link #isStuck}), e.g. because the backend restarted mid-processing.
+	 */
+	public void beginRegeneration(Instant now) {
+		if (!canRegenerate(now)) {
+			throw new InvalidStatusTransitionException(status, "regenerate");
+		}
 		this.aiErrorCode = null;
 		this.status = MessageStatus.PENDING_AI;
+	}
+
+	public boolean canRegenerate(Instant now) {
+		return status == MessageStatus.AI_FAILED || status == MessageStatus.DRAFT_READY || isStuck(now);
+	}
+
+	/**
+	 * A PENDING_AI message not updated for {@link #PENDING_STALE_AFTER} can no longer be
+	 * processing: it is well beyond the longest possible AI run.
+	 */
+	public boolean isStuck(Instant now) {
+		return status == MessageStatus.PENDING_AI && updatedAt != null
+				&& updatedAt.plus(PENDING_STALE_AFTER).isBefore(now);
 	}
 
 	public void editReply(String reply) {

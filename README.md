@@ -221,6 +221,10 @@ frontend's 60 s request timeout.
 - Credentials are held in memory, so a page refresh requires logging in again.
 - The rate limiter is in-memory and per instance, not distributed.
 - AI processing is synchronous; async/job-based processing with polling or SSE would help under load.
+- If the backend restarts while a message is being processed, it stays in `PENDING_AI`. There is no
+  background recovery job; instead, such a message can be regenerated once it has not been updated for
+  2 minutes (longer than the worst-case AI run of about 85 s). The 2-minute threshold is a code constant
+  (`Message.PENDING_STALE_AFTER`), not an environment variable.
 - Approved replies are not sent to customers (no email integration).
 - One draft per message; no draft history.
 - The Render/Vercel deployment steps are documented but should be re-verified after the first

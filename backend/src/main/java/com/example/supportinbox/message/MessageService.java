@@ -67,7 +67,7 @@ public class MessageService {
 	}
 
 	/**
-	 * Re-runs classification and drafting. Allowed from AI_FAILED and DRAFT_READY;
+	 * Re-runs classification and drafting. Allowed from AI_FAILED, DRAFT_READY and a stuck PENDING_AI;
 	 * a new draft replaces the agent's edited reply.
 	 */
 	public Message regenerate(UUID id) {

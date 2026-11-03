@@ -57,6 +57,8 @@ export interface MessageDetail {
   updatedAt: string
   approvedAt: string | null
   version: number
+  /** Decided by the backend; includes PENDING_AI messages stuck for too long. */
+  canRegenerate: boolean
 }
 
 export interface CreateMessageInput {

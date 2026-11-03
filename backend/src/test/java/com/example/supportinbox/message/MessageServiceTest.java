@@ -10,6 +10,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -181,6 +182,18 @@ class MessageServiceTest {
 				.isInstanceOf(InvalidStatusTransitionException.class);
 		assertThatThrownBy(() -> service.regenerate(message.getId()))
 				.isInstanceOf(InvalidStatusTransitionException.class);
+	}
+
+	@Test
+	void regenerateFromStuckPendingProducesDraft() {
+		Message message = created();
+		ReflectionTestUtils.setField(message, "status", MessageStatus.PENDING_AI);
+		ReflectionTestUtils.setField(message, "updatedAt", Instant.now().minus(Message.PENDING_STALE_AFTER).minusSeconds(1));
+
+		Message regenerated = service.regenerate(message.getId());
+
+		assertThat(regenerated.getStatus()).isEqualTo(MessageStatus.DRAFT_READY);
+		assertThat(regenerated.getAiDraft()).isEqualTo("AI draft");
 	}
 
 	@Test
