@@ -9,8 +9,10 @@ import com.example.supportinbox.message.dto.MessageSummary;
 import com.example.supportinbox.message.dto.PageResponse;
 import com.example.supportinbox.message.dto.UpdateReplyRequest;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Size;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -41,9 +43,11 @@ public class MessageController {
 
 	@GetMapping
 	PageResponse<MessageSummary> list(@RequestParam(required = false) MessageStatus status,
-			@RequestParam(required = false) Category category, @RequestParam(defaultValue = "0") @Min(0) int page,
+			@RequestParam(required = false) Category category,
+			@RequestParam(required = false) @Email @Size(max = 320) String customerEmail,
+			@RequestParam(defaultValue = "0") @Min(0) int page,
 			@RequestParam(defaultValue = "20") @Min(1) @Max(100) int size) {
-		return PageResponse.from(service.list(status, category, page, size), MessageSummary::from);
+		return PageResponse.from(service.list(status, category, blankToNull(customerEmail), page, size), MessageSummary::from);
 	}
 
 	@GetMapping("/{id}")

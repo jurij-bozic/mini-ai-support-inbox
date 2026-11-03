@@ -47,11 +47,11 @@ public class MessageService {
 	}
 
 	/**
-	 * Newest first. Filters are optional.
+	 * Newest first. Filters are optional; {@code customerEmail} is matched case-insensitively.
 	 */
-	public Page<Message> list(MessageStatus status, Category category, int page, int size) {
+	public Page<Message> list(MessageStatus status, Category category, String customerEmail, int page, int size) {
 		PageRequest pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-		return transactions.list(status, category, pageable);
+		return transactions.list(status, category, customerEmail, pageable);
 	}
 
 	public Message editReply(UUID id, long version, String finalReply) {

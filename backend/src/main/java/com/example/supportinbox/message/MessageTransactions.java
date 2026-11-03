@@ -1,5 +1,6 @@
 package com.example.supportinbox.message;
 
+import java.util.Locale;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -34,13 +35,16 @@ class MessageTransactions {
 	}
 
 	@Transactional(readOnly = true)
-	Page<Message> list(MessageStatus status, Category category, Pageable pageable) {
+	Page<Message> list(MessageStatus status, Category category, String customerEmail, Pageable pageable) {
 		Specification<Message> filter = Specification.unrestricted();
 		if (status != null) {
 			filter = filter.and((root, query, cb) -> cb.equal(root.get("status"), status));
 		}
 		if (category != null) {
 			filter = filter.and((root, query, cb) -> cb.equal(root.get("category"), category));
+		}
+		if (customerEmail != null) {
+			filter = filter.and((root, query, cb) -> cb.equal(cb.lower(root.get("customerEmail")), customerEmail.toLowerCase(Locale.ROOT)));
 		}
 		return repository.findAll(filter, pageable);
 	}

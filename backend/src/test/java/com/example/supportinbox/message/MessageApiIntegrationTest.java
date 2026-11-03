@@ -216,6 +216,40 @@ class MessageApiIntegrationTest {
 		mvc.perform(get("/api/messages").param("status", "NOPE")).andExpect(status().isBadRequest());
 	}
 
+	@Test
+	void listFiltersByCustomerEmailCaseInsensitively() throws Exception {
+		createFor("One", "ana@example.com");
+		createFor("Two", "ANA@Example.com");
+		createFor("Three", "bob@example.com");
+		create("No email");
+
+		mvc.perform(get("/api/messages").param("customerEmail", "Ana@example.com"))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.totalElements").value(2))
+			.andExpect(jsonPath("$.items[0].contentPreview").value("Two"))
+			.andExpect(jsonPath("$.items[1].contentPreview").value("One"));
+
+		mvc.perform(get("/api/messages").param("customerEmail", "ana@example.com").param("status", "AI_FAILED"))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.totalElements").value(0));
+
+		mvc.perform(get("/api/messages").param("customerEmail", ""))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.totalElements").value(4));
+	}
+
+	@Test
+	void listRejectsInvalidCustomerEmail() throws Exception {
+		mvc.perform(get("/api/messages").param("customerEmail", "not-an-email"))
+			.andExpect(status().isBadRequest());
+	}
+
+	private void createFor(String content, String email) throws Exception {
+		mvc.perform(post("/api/messages").contentType(MediaType.APPLICATION_JSON)
+			.content(objectMapper.createObjectNode().put("content", content).put("customerEmail", email).toString()))
+			.andExpect(status().isCreated());
+	}
+
 	private JsonNode create(String content) throws Exception {
 		MvcResult result = mvc.perform(post("/api/messages").contentType(MediaType.APPLICATION_JSON).content(createBody(content)))
 			.andExpect(status().isCreated())

@@ -128,6 +128,14 @@ export function MessageDetailPage() {
         <dd>
           {message.customerName || 'Anonymous'}
           {message.customerEmail ? ` (${message.customerEmail})` : ''}
+          {message.customerEmail && (
+            <>
+              {' '}
+              <Link to={`/?${new URLSearchParams({ customerEmail: message.customerEmail })}`}>
+                Other messages from this customer
+              </Link>
+            </>
+          )}
         </dd>
         <dt>Created</dt>
         <dd>{formatDate(message.createdAt)}</dd>

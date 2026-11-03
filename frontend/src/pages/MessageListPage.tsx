@@ -29,10 +29,11 @@ export function MessageListPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const status = parseEnum<MessageStatus>(searchParams.get('status'), MESSAGE_STATUSES)
   const category = parseEnum<Category>(searchParams.get('category'), CATEGORIES)
+  const customerEmail = searchParams.get('customerEmail') || undefined
   const page = parsePage(searchParams.get('page'))
   const [reloadCount, setReloadCount] = useState(0)
 
-  const requestKey = `${status ?? ''}|${category ?? ''}|${page}|${reloadCount}`
+  const requestKey = `${status ?? ''}|${category ?? ''}|${customerEmail ?? ''}|${page}|${reloadCount}`
   const [result, setResult] = useState<{ key: string; data?: PageResponse<MessageSummary>; error?: string } | null>(
     null,
   )
@@ -40,7 +41,7 @@ export function MessageListPage() {
 
   useEffect(() => {
     const controller = new AbortController()
-    listMessages({ status, category, page }, { signal: controller.signal, onSlow: () => setSlowKey(requestKey) })
+    listMessages({ status, category, customerEmail, page }, { signal: controller.signal, onSlow: () => setSlowKey(requestKey) })
       .then((data) => {
         if (!controller.signal.aborted) setResult({ key: requestKey, data })
       })
@@ -49,7 +50,7 @@ export function MessageListPage() {
         setResult({ key: requestKey, error: err instanceof Error ? err.message : 'Something went wrong.' })
       })
     return () => controller.abort()
-  }, [status, category, page, requestKey])
+  }, [status, category, customerEmail, page, requestKey])
 
   const current = result?.key === requestKey ? result : null
   const loading = current === null
@@ -58,7 +59,7 @@ export function MessageListPage() {
   const error = current?.error ?? null
 
   const updateParams = useCallback(
-    (changes: { status?: string; category?: string; page?: number }) => {
+    (changes: { status?: string; category?: string; customerEmail?: string; page?: number }) => {
       const next = new URLSearchParams(searchParams)
       for (const [key, value] of Object.entries(changes)) {
         if (value === undefined || value === '' || value === 0) next.delete(key)
@@ -69,7 +70,7 @@ export function MessageListPage() {
     [searchParams, setSearchParams],
   )
 
-  const filtersActive = status !== undefined || category !== undefined
+  const filtersActive = status !== undefined || category !== undefined || customerEmail !== undefined
   const totalPages = data?.totalPages ?? 0
 
   return (
@@ -100,6 +101,13 @@ export function MessageListPage() {
           </select>
         </label>
       </div>
+
+      {customerEmail && (
+        <p>
+          Showing messages from {customerEmail}.{' '}
+          <button onClick={() => updateParams({ customerEmail: '', page: 0 })}>Clear</button>
+        </p>
+      )}
 
       {loading && (
         <p role="status">{slow ? 'The server is waking up, this can take up to a minute…' : 'Loading messages…'}</p>

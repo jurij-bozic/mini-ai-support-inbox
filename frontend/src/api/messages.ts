@@ -27,17 +27,19 @@ export interface PageResponse<T> {
 export interface ListMessagesParams {
   status?: MessageStatus
   category?: Category
+  customerEmail?: string
   page?: number
   size?: number
 }
 
 export function listMessages(
-  { status, category, page = 0, size = 20 }: ListMessagesParams,
+  { status, category, customerEmail, page = 0, size = 20 }: ListMessagesParams,
   options: { signal?: AbortSignal; onSlow?: () => void } = {},
 ): Promise<PageResponse<MessageSummary>> {
   const query = new URLSearchParams({ page: String(page), size: String(size) })
   if (status) query.set('status', status)
   if (category) query.set('category', category)
+  if (customerEmail) query.set('customerEmail', customerEmail)
   return apiFetch<PageResponse<MessageSummary>>(`/api/messages?${query}`, options)
 }
 

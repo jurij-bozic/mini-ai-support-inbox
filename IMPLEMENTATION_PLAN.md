@@ -48,7 +48,7 @@ Additional rules:
 - [x] F9 Message history view
 - [x] F10 New message form
 - [x] F11 Message detail: edit, approve, regenerate
-- [ ] F12 (Optional) Per-customer history
+- [x] F12 (Optional) Per-customer history
 - [ ] F13 Deployment and documentation
 
 ---

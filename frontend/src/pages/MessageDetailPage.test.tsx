@@ -174,3 +174,15 @@ it('shows a not-found message for an unknown id', async () => {
   )
   expect(await screen.findByRole('alert')).toHaveTextContent('Message not found.')
 })
+
+it('links to the customer history only when an email is known', async () => {
+  renderDetail(message({ customerEmail: 'ana@example.com' }))
+  const link = await screen.findByRole('link', { name: 'Other messages from this customer' })
+  expect(link).toHaveAttribute('href', '/?customerEmail=ana%40example.com')
+})
+
+it('shows no customer history link without an email', async () => {
+  renderDetail(message())
+  await screen.findByText('Where is my order?')
+  expect(screen.queryByRole('link', { name: 'Other messages from this customer' })).not.toBeInTheDocument()
+})

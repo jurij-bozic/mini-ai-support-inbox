@@ -32,10 +32,10 @@ function requestedUrl(call: number): URL {
   return new URL(String(fetchMock.mock.calls[call][0]), 'http://localhost')
 }
 
-function renderList() {
+function renderList(initialEntry = '/') {
   vi.stubGlobal('fetch', fetchMock)
   render(
-    <MemoryRouter initialEntries={['/']}>
+    <MemoryRouter initialEntries={[initialEntry]}>
       <MessageListPage />
     </MemoryRouter>,
   )
@@ -121,4 +121,17 @@ it('requests the next page', async () => {
 
   await userEvent.click(screen.getByRole('button', { name: 'Next' }))
   await waitFor(() => expect(requestedUrl(fetchMock.mock.calls.length - 1).searchParams.get('page')).toBe('1'))
+})
+
+it('filters by customer email from the URL and can clear the filter', async () => {
+  fetchMock.mockResolvedValue(pageOf([summary({ customerEmail: 'ana@example.com' })]))
+  renderList('/?customerEmail=ana%40example.com')
+
+  expect(await screen.findByText(/Showing messages from ana@example.com/)).toBeInTheDocument()
+  expect(requestedUrl(0).searchParams.get('customerEmail')).toBe('ana@example.com')
+
+  await userEvent.click(screen.getByRole('button', { name: 'Clear' }))
+  await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2))
+  expect(requestedUrl(1).searchParams.has('customerEmail')).toBe(false)
+  expect(screen.queryByText(/Showing messages from/)).not.toBeInTheDocument()
 })
